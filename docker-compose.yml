@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  neo4j:
+    image: neo4j:5.18-community
+    container_name: neo4j
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-test}
+      - NEO4JLABS_PLUGINS=["apoc","graph-data-science"]
+    volumes:
+      - ./neo4j/data:/data
+    ports:
+      - "7474:7474" # HTTP Browser/UI
+      - "7687:7687" # Bolt protocol for drivers 
