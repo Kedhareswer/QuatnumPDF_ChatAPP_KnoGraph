@@ -3,9 +3,7 @@
 # [![QuantumPDF ChatApp](https://img.shields.io/badge/QuantumPDF-ChatApp-blue?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTEyIDJMMiA3djEwbDEwIDUgMTAtNVY3TDEyIDJ6Ii8+PC9zdmc+)](https://github.com/Kedhareswer/QuantumPDF_ChatApp)
 
 </div>
-
 <div align="center">
-
 **AI-Powered PDF Document Analysis & Chat Platform**
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
