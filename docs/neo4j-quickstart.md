@@ -7,11 +7,11 @@
 
 ## Start the database
 
-```powershell
+\`\`\`powershell
 cd path\to\QuatnumPDF_ChatAPP_KnoGraph
 # runs Neo4j in the background
 docker compose up -d
-```
+\`\`\`
 
 What happens:
 1. Pulls the `neo4j:5.18-community` image (first run only).
@@ -26,9 +26,9 @@ What happens:
 3. Neo4j will prompt you to change the password — update your local `.env` accordingly.
 
 ## Stopping the database
-```powershell
+\`\`\`powershell
 docker compose down
-```
+\`\`\`
 
 ## Useful commands
 | Purpose | Command |
@@ -41,14 +41,14 @@ docker compose down
 
 Add these lines to a local `.env` file (same directory as `docker-compose.yml`):
 
-```env
+\`\`\`env
 NEO4J_URI=bolt://localhost:7687
 NEO4J_USER=neo4j
 NEO4J_PASSWORD=test
 GRAPH_RAG_ENABLED=true
-```
+\`\`\`
 
 ## Next steps
 * Define the graph schema (`schema.cypher`).
 * Run the ETL container to load documents.
-* Integrate the graph into the RAG pipeline via `GraphService`. 
+* Integrate the graph into the RAG pipeline via `GraphService`.

@@ -34,4 +34,4 @@ export async function POST() {
     timestamp: new Date().toISOString(),
     latency: Math.round(actualLatency * 100) / 100 // Real processing time in ms
   })
-} 
+}

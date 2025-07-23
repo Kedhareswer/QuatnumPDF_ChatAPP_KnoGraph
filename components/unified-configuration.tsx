@@ -10,13 +10,26 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Slider } from "@/components/ui/slider"
 import { Label } from "@/components/ui/label"
-import { Zap, Database, Eye, EyeOff, Check, X, ExternalLink, Info, AlertTriangle, Settings, Loader2, Globe, Cpu, Sparkles, Brain, Search } from "lucide-react"
+import {
+  Zap,
+  Database,
+  Eye,
+  EyeOff,
+  Check,
+  X,
+  ExternalLink,
+  Info,
+  AlertTriangle,
+  Settings,
+  Loader2,
+  Globe,
+  Cpu,
+  Sparkles,
+  Brain,
+  Search,
+} from "lucide-react"
 import { useAppStore } from "@/lib/store"
-import { 
-  ConfigurationTestingSkeleton, 
-  APITestingSkeleton, 
-  VectorDatabaseLoadingSkeleton 
-} from "@/components/skeleton-loaders"
+import { ConfigurationTestingSkeleton, VectorDatabaseLoadingSkeleton } from "@/components/skeleton-loaders"
 
 const AI_PROVIDERS = {
   // Major Providers
@@ -36,7 +49,12 @@ const AI_PROVIDERS = {
     name: "Anthropic",
     description: "Claude models with strong reasoning and safety focus",
     category: "Major",
-    models: ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-opus-20240229", "claude-3-sonnet-20240229"],
+    models: [
+      "claude-3-5-sonnet-20241022",
+      "claude-3-5-haiku-20241022",
+      "claude-3-opus-20240229",
+      "claude-3-sonnet-20240229",
+    ],
     defaultModel: "claude-3-5-sonnet-20241022",
     baseUrl: "https://api.anthropic.com",
     signupUrl: "https://console.anthropic.com/",
@@ -101,13 +119,13 @@ const AI_PROVIDERS = {
     description: "Access to 400+ AI models through one API",
     category: "Aggregator",
     models: [
-      "openai/gpt-4o", 
+      "openai/gpt-4o",
       "openai/gpt-4o-mini",
-      "anthropic/claude-3.5-sonnet", 
-      "meta-llama/llama-3.3-70b-instruct", 
+      "anthropic/claude-3.5-sonnet",
+      "meta-llama/llama-3.3-70b-instruct",
       "google/gemini-2.0-flash-exp",
       "deepseek/deepseek-v3",
-      "openai/o1-preview"
+      "openai/o1-preview",
     ],
     defaultModel: "openai/gpt-4o-mini",
     baseUrl: "https://openrouter.ai/api/v1",
@@ -122,13 +140,13 @@ const AI_PROVIDERS = {
     category: "Aggregator",
     models: [
       "gpt-4o",
-      "gpt-4o-mini", 
+      "gpt-4o-mini",
       "claude-3-5-sonnet",
       "deepseek-v3",
       "deepseek-r1",
       "llama-3.3-70b",
       "gemini-2.5-pro",
-      "gemini-2.5-flash"
+      "gemini-2.5-flash",
     ],
     defaultModel: "gpt-4o-mini",
     baseUrl: "https://api.aimlapi.com/v1",
@@ -144,11 +162,11 @@ const AI_PROVIDERS = {
     description: "Open-source models via Inference Providers",
     category: "Specialized",
     models: [
-      "meta-llama/Meta-Llama-3.3-70B-Instruct", 
-      "Qwen/Qwen2.5-7B-Instruct-1M", 
-      "microsoft/Phi-4", 
+      "meta-llama/Meta-Llama-3.3-70B-Instruct",
+      "Qwen/Qwen2.5-7B-Instruct-1M",
+      "microsoft/Phi-4",
       "deepseek-ai/DeepSeek-R1",
-      "google/gemma-2-2b-it"
+      "google/gemma-2-2b-it",
     ],
     defaultModel: "meta-llama/Meta-Llama-3.3-70B-Instruct",
     baseUrl: "https://api-inference.huggingface.co",
@@ -162,9 +180,9 @@ const AI_PROVIDERS = {
     description: "Search-augmented language models",
     category: "Specialized",
     models: [
-      "llama-3.1-sonar-large-128k-online", 
-      "llama-3.1-sonar-small-128k-online", 
-      "llama-3.1-sonar-huge-128k-online"
+      "llama-3.1-sonar-large-128k-online",
+      "llama-3.1-sonar-small-128k-online",
+      "llama-3.1-sonar-huge-128k-online",
     ],
     defaultModel: "llama-3.1-sonar-small-128k-online",
     baseUrl: "https://api.perplexity.ai",
@@ -179,11 +197,7 @@ const AI_PROVIDERS = {
     name: "DeepInfra",
     description: "Serverless inference for open-source models",
     category: "Cloud",
-    models: [
-      "meta-llama/Meta-Llama-3.3-70B-Instruct", 
-      "Qwen/Qwen2.5-72B-Instruct", 
-      "deepseek-ai/DeepSeek-V3"
-    ],
+    models: ["meta-llama/Meta-Llama-3.3-70B-Instruct", "Qwen/Qwen2.5-72B-Instruct", "deepseek-ai/DeepSeek-V3"],
     defaultModel: "meta-llama/Meta-Llama-3.3-70B-Instruct",
     baseUrl: "https://api.deepinfra.com/v1/openai",
     signupUrl: "https://deepinfra.com/",
@@ -195,11 +209,7 @@ const AI_PROVIDERS = {
     name: "Replicate",
     description: "Run machine learning models in the cloud",
     category: "Cloud",
-    models: [
-      "meta/llama-3.3-70b-instruct", 
-      "deepseek-ai/deepseek-v3", 
-      "qwen/qwen2.5-72b-instruct"
-    ],
+    models: ["meta/llama-3.3-70b-instruct", "deepseek-ai/deepseek-v3", "qwen/qwen2.5-72b-instruct"],
     defaultModel: "meta/llama-3.3-70b-instruct",
     baseUrl: "https://api.replicate.com/v1",
     signupUrl: "https://replicate.com/account/api-tokens",
@@ -211,10 +221,7 @@ const AI_PROVIDERS = {
     name: "Anyscale",
     description: "Scalable AI model serving",
     category: "Cloud",
-    models: [
-      "meta-llama/Llama-3.3-70b-instruct", 
-      "mistralai/Mistral-7B-Instruct-v0.3"
-    ],
+    models: ["meta-llama/Llama-3.3-70b-instruct", "mistralai/Mistral-7B-Instruct-v0.3"],
     defaultModel: "meta-llama/Llama-3.3-70b-instruct",
     baseUrl: "https://api.endpoints.anyscale.com/v1",
     signupUrl: "https://console.anyscale.com/",
@@ -265,7 +272,8 @@ const VECTOR_DB_PROVIDERS = {
     icon: <Zap className="w-4 h-4" />,
     difficulty: "Easy",
     defaultUrl: "",
-    setupInstructions: "Create an account at Pinecone.io and create an index with the dimensions set to match your embedding model",
+    setupInstructions:
+      "Create an account at Pinecone.io and create an index with the dimensions set to match your embedding model",
   },
   weaviate: {
     name: "Weaviate",
@@ -289,8 +297,7 @@ interface UnifiedConfigurationProps {
 }
 
 export function UnifiedConfiguration({ onTestAI, onTestVectorDB }: UnifiedConfigurationProps) {
-  const { aiConfig, setAIConfig, vectorDBConfig, setVectorDBConfig, addError } =
-    useAppStore()
+  const { aiConfig, setAIConfig, vectorDBConfig, setVectorDBConfig, addError } = useAppStore()
 
   const [showApiKeys, setShowApiKeys] = useState({
     ai: false,
@@ -456,8 +463,8 @@ export function UnifiedConfiguration({ onTestAI, onTestVectorDB }: UnifiedConfig
       </div>
 
       <Tabs defaultValue="ai" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-          <TabsTrigger 
+        <TabsList className="grid w-full grid-cols-3 gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <TabsTrigger
             value="ai"
             className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm data-[state=active]:font-medium 
                        hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 rounded-md flex items-center justify-center py-2 px-1 whitespace-nowrap"
@@ -465,13 +472,21 @@ export function UnifiedConfiguration({ onTestAI, onTestVectorDB }: UnifiedConfig
             <Zap className="w-4 h-4 mr-1" />
             <span className="text-sm truncate">AI Provider</span>
           </TabsTrigger>
-          <TabsTrigger 
+          <TabsTrigger
             value="vectordb"
             className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm data-[state=active]:font-medium 
                        hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 rounded-md flex items-center justify-center py-2 px-1 whitespace-nowrap"
           >
             <Database className="w-4 h-4 mr-1" />
             <span className="text-sm truncate">Vector DB</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="knowledgegraph"
+            className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm data-[state=active]:font-medium 
+               hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200 rounded-md flex items-center justify-center py-2 px-1 whitespace-nowrap"
+          >
+            <Brain className="w-4 h-4 mr-1" />
+            <span className="text-sm truncate">Knowledge Graph</span>
           </TabsTrigger>
         </TabsList>
 
@@ -546,8 +561,11 @@ export function UnifiedConfiguration({ onTestAI, onTestVectorDB }: UnifiedConfig
                   <AlertDescription>
                     <div className="space-y-2">
                       <p className="text-sm">
-                        <strong>{AI_PROVIDERS[aiConfig.provider as keyof typeof AI_PROVIDERS]?.name || 'Unknown Provider'}:</strong>{" "}
-                        {AI_PROVIDERS[aiConfig.provider as keyof typeof AI_PROVIDERS]?.description || 'Provider not found'}
+                        <strong>
+                          {AI_PROVIDERS[aiConfig.provider as keyof typeof AI_PROVIDERS]?.name || "Unknown Provider"}:
+                        </strong>{" "}
+                        {AI_PROVIDERS[aiConfig.provider as keyof typeof AI_PROVIDERS]?.description ||
+                          "Provider not found"}
                       </p>
                       <div className="flex items-center space-x-2">
                         <Button
@@ -555,7 +573,7 @@ export function UnifiedConfiguration({ onTestAI, onTestVectorDB }: UnifiedConfig
                           variant="outline"
                           onClick={() =>
                             window.open(
-                              AI_PROVIDERS[aiConfig.provider as keyof typeof AI_PROVIDERS]?.signupUrl || '#',
+                              AI_PROVIDERS[aiConfig.provider as keyof typeof AI_PROVIDERS]?.signupUrl || "#",
                               "_blank",
                             )
                           }
@@ -565,7 +583,7 @@ export function UnifiedConfiguration({ onTestAI, onTestVectorDB }: UnifiedConfig
                           Get API Key
                         </Button>
                         <Badge variant="outline" className="text-xs">
-                          {AI_PROVIDERS[aiConfig.provider as keyof typeof AI_PROVIDERS]?.pricing || '?'} pricing
+                          {AI_PROVIDERS[aiConfig.provider as keyof typeof AI_PROVIDERS]?.pricing || "?"} pricing
                         </Badge>
                       </div>
                     </div>
@@ -573,22 +591,24 @@ export function UnifiedConfiguration({ onTestAI, onTestVectorDB }: UnifiedConfig
                 </Alert>
 
                 {/* Embedding Warning */}
-                {AI_PROVIDERS[aiConfig.provider as keyof typeof AI_PROVIDERS] && !AI_PROVIDERS[aiConfig.provider as keyof typeof AI_PROVIDERS].embeddingSupport && (
-                  <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>
-                      <strong>Warning:</strong> This provider doesn't support embeddings. Document processing will use
-                      fallback embeddings which may reduce search quality.
-                    </AlertDescription>
-                  </Alert>
-                )}
+                {AI_PROVIDERS[aiConfig.provider as keyof typeof AI_PROVIDERS] &&
+                  !AI_PROVIDERS[aiConfig.provider as keyof typeof AI_PROVIDERS].embeddingSupport && (
+                    <Alert variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>Warning:</strong> This provider doesn't support embeddings. Document processing will use
+                        fallback embeddings which may reduce search quality.
+                      </AlertDescription>
+                    </Alert>
+                  )}
 
                 {/* Provider Not Found Warning */}
                 {!AI_PROVIDERS[aiConfig.provider as keyof typeof AI_PROVIDERS] && (
                   <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>
-                      <strong>Error:</strong> Provider "{aiConfig.provider}" is not supported. Please select a different provider.
+                      <strong>Error:</strong> Provider "{aiConfig.provider}" is not supported. Please select a different
+                      provider.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -664,13 +684,13 @@ export function UnifiedConfiguration({ onTestAI, onTestVectorDB }: UnifiedConfig
                 {testingStatus.ai === "testing" ? (
                   <ConfigurationTestingSkeleton />
                 ) : (
-                <Button
-                  onClick={handleTestAI}
+                  <Button
+                    onClick={handleTestAI}
                     disabled={!aiConfig.apiKey.trim()}
-                  className="w-full border-2 border-black bg-white text-black hover:bg-black hover:text-white"
-                >
+                    className="w-full border-2 border-black bg-white text-black hover:bg-black hover:text-white"
+                  >
                     Test Connection
-                </Button>
+                  </Button>
                 )}
               </CardContent>
             </Card>
@@ -845,17 +865,106 @@ export function UnifiedConfiguration({ onTestAI, onTestVectorDB }: UnifiedConfig
               {testingStatus.vectordb === "testing" ? (
                 <VectorDatabaseLoadingSkeleton />
               ) : (
-              <Button
-                onClick={handleTestVectorDB}
+                <Button
+                  onClick={handleTestVectorDB}
                   disabled={
-                    (VECTOR_DB_PROVIDERS[vectorDBConfig.provider as keyof typeof VECTOR_DB_PROVIDERS].requiresApiKey && !vectorDBConfig.apiKey?.trim()) ||
-                    (VECTOR_DB_PROVIDERS[vectorDBConfig.provider as keyof typeof VECTOR_DB_PROVIDERS].requiresUrl && !vectorDBConfig.url?.trim())
+                    (VECTOR_DB_PROVIDERS[vectorDBConfig.provider as keyof typeof VECTOR_DB_PROVIDERS].requiresApiKey &&
+                      !vectorDBConfig.apiKey?.trim()) ||
+                    (VECTOR_DB_PROVIDERS[vectorDBConfig.provider as keyof typeof VECTOR_DB_PROVIDERS].requiresUrl &&
+                      !vectorDBConfig.url?.trim())
                   }
-                className="w-full border-2 border-black bg-white text-black hover:bg-black hover:text-white"
-              >
+                  className="w-full border-2 border-black bg-white text-black hover:bg-black hover:text-white"
+                >
                   Test Connection
-              </Button>
+                </Button>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Knowledge Graph Configuration */}
+        <TabsContent value="knowledgegraph">
+          <Card className="border-2 border-black shadow-none">
+            <CardHeader className="border-b border-black">
+              <CardTitle className="flex items-center justify-between">
+                <span>KNOWLEDGE GRAPH CONFIGURATION</span>
+                <Badge variant="outline" className="text-xs">
+                  BETA
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              {/* Provider Selection */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Graph Database Provider</label>
+                <Select value="memory" disabled>
+                  <SelectTrigger className="border-2 border-black">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="memory">
+                      <div className="flex items-center space-x-2">
+                        <Database className="w-4 h-4" />
+                        <span>In-Memory (Development)</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="neo4j" disabled>
+                      <div className="flex items-center space-x-2">
+                        <Database className="w-4 h-4" />
+                        <span>Neo4j (Production)</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Hybrid Settings */}
+              <div className="space-y-4 border-t pt-4">
+                <h4 className="text-sm font-medium">Hybrid Search Settings</h4>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">Vector Weight: 60%</Label>
+                  <Slider value={[0.6]} disabled max={1} min={0} step={0.1} className="w-full" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">Graph Weight: 40%</Label>
+                  <Slider value={[0.4]} disabled max={1} min={0} step={0.1} className="w-full" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">Max Graph Depth: 3</Label>
+                  <Slider value={[3]} disabled max={6} min={1} step={1} className="w-full" />
+                </div>
+              </div>
+
+              {/* Status */}
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  <div className="space-y-2">
+                    <p className="text-sm">
+                      <strong>Knowledge Graph:</strong> Automatically extracts entities and relationships from your
+                      documents to enable advanced reasoning and multi-hop queries.
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      <Badge variant="outline" className="text-xs border-green-600 text-green-600">
+                        Entity Extraction
+                      </Badge>
+                      <Badge variant="outline" className="text-xs border-blue-600 text-blue-600">
+                        Relationship Mapping
+                      </Badge>
+                      <Badge variant="outline" className="text-xs border-purple-600 text-purple-600">
+                        Multi-hop Reasoning
+                      </Badge>
+                    </div>
+                  </div>
+                </AlertDescription>
+              </Alert>
+
+              <Button disabled className="w-full border-2 border-black bg-gray-100 text-gray-500">
+                Knowledge Graph Active (Beta)
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>

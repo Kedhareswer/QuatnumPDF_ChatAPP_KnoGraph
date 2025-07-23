@@ -27,4 +27,4 @@ export default function Mermaid({ chart }: MermaidProps) {
   }, [chart])
 
   return <div ref={ref} className="my-4 overflow-x-auto" />
-} 
+}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -17,13 +17,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
-  Upload,
-  Trash2,
-  AlertCircle,
-  CheckCircle,
-  Loader2,
-  Zap,
-  Database,
 } from "lucide-react"
 
 import { ChatInterface } from "@/components/chat-interface"
@@ -36,13 +29,10 @@ import { EnhancedSearch } from "@/components/enhanced-search"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { ErrorHandler } from "@/components/error-handler"
 import { useAppStore } from "@/lib/store"
-import { RAGEngine } from "@/lib/rag-engine"
 import { VectorDatabaseClient } from "@/lib/vector-database-client"
-import { LoadingIndicator } from "@/components/loading-indicator"
-import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/sonner"
 import { TabContentLoadingSkeleton, ChatInterfaceSkeleton } from "@/components/skeleton-loaders"
 import { AIClient } from "@/lib/ai-client"
+import { HybridRAGEngine } from "@/lib/hybrid-rag-engine"
 
 export default function QuantumPDFChatbot() {
   const {
@@ -75,9 +65,30 @@ export default function QuantumPDFChatbot() {
     updateMessage,
   } = useAppStore()
 
-  const [ragEngine] = useState(() => new RAGEngine())
+  const [hybridRAGEngine] = useState(
+    () =>
+      new HybridRAGEngine({
+        aiConfig,
+        vectorDBConfig,
+        knowledgeGraphConfig: {
+          provider: "memory", // Use in-memory for development, Neo4j for production
+          connectionString: process.env.NEO4J_URI,
+          username: process.env.NEO4J_USERNAME,
+          password: process.env.NEO4J_PASSWORD,
+          database: "neo4j",
+        },
+        hybridSettings: {
+          vectorWeight: 0.6,
+          graphWeight: 0.4,
+          enableGraphReasoning: true,
+          maxGraphDepth: 3,
+          minConfidenceThreshold: 0.1,
+        },
+      }),
+  )
   const [vectorDB, setVectorDB] = useState(() => new VectorDatabaseClient(vectorDBConfig))
-  
+  const ragEngine = hybridRAGEngine // Declare ragEngine variable
+
   // Search state
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -88,37 +99,37 @@ export default function QuantumPDFChatbot() {
 
   // Initialize RAG engine with store config
   useEffect(() => {
-    const initializeRAG = async () => {
+    const initializeHybridRAG = async () => {
       try {
         if (aiConfig.apiKey && aiConfig.provider) {
-      setModelStatus("loading")
-          console.log("Initializing RAG engine with config:", {
+          setModelStatus("loading")
+          console.log("Initializing Hybrid RAG engine with config:", {
             provider: aiConfig.provider,
             model: aiConfig.model,
-            hasApiKey: !!aiConfig.apiKey
+            hasApiKey: !!aiConfig.apiKey,
           })
-          
-          await ragEngine.initialize(aiConfig)
+
+          await hybridRAGEngine.initialize()
           setModelStatus("ready")
-          console.log("RAG engine initialized successfully")
+          console.log("Hybrid RAG engine initialized successfully")
         } else {
           setModelStatus("config")
-          console.log("RAG engine waiting for configuration")
+          console.log("Hybrid RAG engine waiting for configuration")
         }
       } catch (error) {
-          console.error("Failed to initialize RAG engine:", error)
-          setModelStatus("error")
-        
-          addError({
-            type: "error",
-          title: "RAG Engine Error",
-          message: error instanceof Error ? error.message : "Failed to initialize RAG engine",
+        console.error("Failed to initialize Hybrid RAG engine:", error)
+        setModelStatus("error")
+
+        addError({
+          type: "error",
+          title: "Hybrid RAG Engine Error",
+          message: error instanceof Error ? error.message : "Failed to initialize Hybrid RAG engine",
         })
       }
     }
 
-    initializeRAG()
-  }, [aiConfig.provider, aiConfig.apiKey, aiConfig.model]) // Re-initialize when config changes
+    initializeHybridRAG()
+  }, [aiConfig.provider, aiConfig.apiKey, aiConfig.model])
 
   useEffect(() => {
     // Initialize vector database when config changes
@@ -135,11 +146,14 @@ export default function QuantumPDFChatbot() {
     })
   }, [vectorDBConfig, addError])
 
-  const handleSendMessage = async (content: string, options?: {
-    showThinking?: boolean,
-    complexityLevel?: 'simple' | 'normal' | 'complex',
-    useContext?: boolean
-  }) => {
+  const handleSendMessage = async (
+    content: string,
+    options?: {
+      showThinking?: boolean
+      complexityLevel?: "simple" | "normal" | "complex"
+      useContext?: boolean
+    },
+  ) => {
     if ((options?.useContext ?? true) && !documents.length) {
       addError({
         type: "warning",
@@ -163,7 +177,7 @@ export default function QuantumPDFChatbot() {
     try {
       // Determine complexity based on question characteristics
       const detectedComplexity = options?.complexityLevel || detectQuestionComplexity(content)
-      const showThinking = options?.showThinking || detectedComplexity === 'complex'
+      const showThinking = options?.showThinking || detectedComplexity === "complex"
 
       console.log(`Processing query with complexity: ${detectedComplexity}, thinking: ${showThinking}`)
 
@@ -180,21 +194,30 @@ export default function QuantumPDFChatbot() {
           content: "",
           timestamp: new Date(),
         })
-        await client.generateTextStream([
-          { role: "user", content }
-        ], (token) => {
-          updateMessage(assistantId, { content: (messages.find(m=>m.id===assistantId)?.content || "") + token })
+        await client.generateTextStream([{ role: "user", content }], (token) => {
+          updateMessage(assistantId, { content: (messages.find((m) => m.id === assistantId)?.content || "") + token })
         })
         return // early since streaming handled
       } else {
-        const response = await ragEngine.query(content, {
-          showThinking,
+        const response = await hybridRAGEngine.hybridQuery(content, {
+          useVector: options?.useContext !== false,
+          useGraph: true,
+          showReasoning: showThinking,
+          maxResults: 10,
           complexityLevel: detectedComplexity,
-          tokenBudget: 4000
         })
-        responseAnswer = response.answer
+
+        responseAnswer =
+          response.vectorResults.length > 0
+            ? response.vectorResults[0].content
+            : "I couldn't find relevant information to answer your question."
         responseSources = response.sources
-        responseMeta = response
+        responseMeta = {
+          hybridScore: response.combinedScore,
+          explanation: response.explanation,
+          graphNodes: response.graphResults.nodes.length,
+          graphRelationships: response.graphResults.relationships.length,
+        }
       }
 
       const assistantMessage = {
@@ -204,12 +227,12 @@ export default function QuantumPDFChatbot() {
         timestamp: new Date(),
         sources: responseSources,
         metadata: {
-          ...(responseMeta.tokenUsage ? {responseTime: responseMeta.tokenUsage.totalTokens * 2} : {}),
-          ...(responseMeta.relevanceScore !== undefined ? {relevanceScore: responseMeta.relevanceScore} : {}),
-          ...(responseMeta.retrievedChunks ? {retrievedChunks: responseMeta.retrievedChunks.length} : {}),
-          ...(responseMeta.qualityMetrics ? {qualityMetrics: responseMeta.qualityMetrics} : {}),
-          ...(responseMeta.tokenUsage ? {tokenUsage: responseMeta.tokenUsage} : {}),
-          ...(responseMeta.reasoning ? {reasoning: responseMeta.reasoning} : {}),
+          ...(responseMeta.tokenUsage ? { responseTime: responseMeta.tokenUsage.totalTokens * 2 } : {}),
+          ...(responseMeta.relevanceScore !== undefined ? { relevanceScore: responseMeta.relevanceScore } : {}),
+          ...(responseMeta.retrievedChunks ? { retrievedChunks: responseMeta.retrievedChunks.length } : {}),
+          ...(responseMeta.qualityMetrics ? { qualityMetrics: responseMeta.qualityMetrics } : {}),
+          ...(responseMeta.tokenUsage ? { tokenUsage: responseMeta.tokenUsage } : {}),
+          ...(responseMeta.reasoning ? { reasoning: responseMeta.reasoning } : {}),
         },
       }
 
@@ -229,7 +252,6 @@ export default function QuantumPDFChatbot() {
           message: `Response quality: ${responseMeta.qualityMetrics.finalRating.toFixed(1)}% - Consider rephrasing your question for better results`,
         })
       }
-
     } catch (error) {
       console.error("Error sending message:", error)
 
@@ -252,23 +274,27 @@ export default function QuantumPDFChatbot() {
   }
 
   // Helper function to detect question complexity
-  const detectQuestionComplexity = (question: string): 'simple' | 'normal' | 'complex' => {
+  const detectQuestionComplexity = (question: string): "simple" | "normal" | "complex" => {
     const questionLower = question.toLowerCase()
-    
+
     // Simple questions - direct factual queries
     if (/(what is|when|where|who|date|name|title)/i.test(question) && question.length < 50) {
-      return 'simple'
+      return "simple"
     }
-    
+
     // Complex questions - analysis, comparison, synthesis
-    if (/(analyze|compare|evaluate|synthesize|implications|relationships|comprehensive|detailed analysis)/i.test(question) || 
-        question.length > 150 ||
-        (question.match(/\?/g) || []).length > 1) {
-      return 'complex'
+    if (
+      /(analyze|compare|evaluate|synthesize|implications|relationships|comprehensive|detailed analysis)/i.test(
+        question,
+      ) ||
+      question.length > 150 ||
+      (question.match(/\?/g) || []).length > 1
+    ) {
+      return "complex"
     }
-    
+
     // Default to normal for everything else
-    return 'normal'
+    return "normal"
   }
 
   const handleDocumentUpload = async (document: any) => {
@@ -281,25 +307,25 @@ export default function QuantumPDFChatbot() {
         chunksLength: document.chunks?.length,
         hasEmbeddings: !!document.embeddings,
         embeddingsLength: document.embeddings?.length,
-        uploadedAt: document.uploadedAt
+        uploadedAt: document.uploadedAt,
       })
 
       // Check RAG engine status before adding document
       console.log("RAG Engine status before adding document:")
       console.log("- RAG Engine available:", !!ragEngine)
       console.log("- RAG Engine healthy:", ragEngine ? ragEngine.isHealthy() : false)
-      if (ragEngine) {
-        const status = ragEngine.getStatus()
+      if (hybridRAGEngine) {
+        const status = hybridRAGEngine.getSystemStatus()
         console.log("- RAG Engine initialized:", status.initialized)
         console.log("- Current document count:", status.documentCount)
         console.log("- Current provider:", status.currentProvider)
         console.log("- Current model:", status.currentModel)
       }
 
-      console.log("🔄 Adding document to RAG engine...")
-      await ragEngine.addDocument(document)
-      console.log("✅ Document successfully added to RAG engine")
-      
+      console.log("🔄 Adding document to Hybrid RAG engine...")
+      await hybridRAGEngine.addDocument(document)
+      console.log("✅ Document successfully added to Hybrid RAG engine")
+
       console.log("🔄 Adding document to store...")
       addDocument(document)
       console.log("✅ Document successfully added to store")
@@ -331,8 +357,8 @@ export default function QuantumPDFChatbot() {
 
       // Final status check
       console.log("Final status after document upload:")
-      if (ragEngine) {
-        const finalStatus = ragEngine.getStatus()
+      if (hybridRAGEngine) {
+        const finalStatus = hybridRAGEngine.getSystemStatus()
         console.log("- RAG Engine document count:", finalStatus.documentCount)
         console.log("- RAG Engine total chunks:", finalStatus.totalChunks)
       }
@@ -343,7 +369,7 @@ export default function QuantumPDFChatbot() {
         title: "Document Added",
         message: `Successfully processed ${document.name} with ${document.chunks?.length || 0} chunks`,
       })
-      
+
       console.log("=== Page: Document upload completed successfully ===")
     } catch (error) {
       console.error("❌ Error in handleDocumentUpload:", error)
@@ -353,9 +379,9 @@ export default function QuantumPDFChatbot() {
         hasChunks: !!document?.chunks,
         chunksLength: document?.chunks?.length,
         hasEmbeddings: !!document?.embeddings,
-        embeddingsLength: document?.embeddings?.length
+        embeddingsLength: document?.embeddings?.length,
       })
-      
+
       addError({
         type: "error",
         title: "Document Processing Failed",
@@ -366,7 +392,7 @@ export default function QuantumPDFChatbot() {
 
   const handleRemoveDocument = async (id: string) => {
     try {
-      ragEngine.removeDocument(id)
+      await hybridRAGEngine.removeDocument(id)
       await vectorDB.deleteDocument(id)
       removeDocument(id)
 
@@ -395,7 +421,7 @@ export default function QuantumPDFChatbot() {
     if (window.confirm("Start a new session? This will clear the current chat and documents.")) {
       clearMessages()
       clearDocuments()
-      ragEngine.clearDocuments()
+      hybridRAGEngine.clearDocuments()
       vectorDB.clear()
       setActiveTab("documents")
     }
@@ -404,18 +430,18 @@ export default function QuantumPDFChatbot() {
   const handleSearch = async (query: string, filters: any) => {
     try {
       setIsSearching(true)
-      
+
       console.log("=== Document Search Started ===")
       console.log("Query:", query)
       console.log("Search mode:", filters.searchMode)
       console.log("Filters:", filters)
       console.log("Documents available:", documents.length)
       console.log("Vector DB provider:", vectorDBConfig.provider)
-      
+
       // Generate embedding for the query
       let embedding: number[] = []
       let embeddingGenerated = false
-      
+
       try {
         // Only generate embedding if needed (semantic or hybrid search)
         if (filters.searchMode === "semantic" || filters.searchMode === "hybrid") {
@@ -428,12 +454,12 @@ export default function QuantumPDFChatbot() {
         }
       } catch (err) {
         console.error("❌ Could not generate embedding:", err)
-        
+
         // For semantic search, this is a critical error
         if (filters.searchMode === "semantic") {
           throw new Error("Embedding generation failed for semantic search. Please configure an AI provider first.")
         }
-        
+
         // For hybrid search, continue with keyword-only
         if (filters.searchMode === "hybrid") {
           console.warn("Falling back to keyword-only search due to embedding failure")
@@ -477,18 +503,21 @@ export default function QuantumPDFChatbot() {
         limit: filters.maxResults,
         threshold: filters.relevanceThreshold,
       }
-      
+
       console.log("Search options:", searchOptions)
-      
+
       const results = await vectorDB.search(query, embedding, searchOptions)
-      
+
       console.log("Raw search results:", results.length)
-      console.log("Results preview:", results.slice(0, 3).map(r => ({
-        id: r.id,
-        score: r.score,
-        contentPreview: r.content.substring(0, 100) + "...",
-        searchMode: r.metadata?.searchMode
-      })))
+      console.log(
+        "Results preview:",
+        results.slice(0, 3).map((r) => ({
+          id: r.id,
+          score: r.score,
+          contentPreview: r.content.substring(0, 100) + "...",
+          searchMode: r.metadata?.searchMode,
+        })),
+      )
 
       // Transform results to match expected format
       const transformedResults = results.map((result, index) => ({
@@ -502,8 +531,8 @@ export default function QuantumPDFChatbot() {
           timestamp: result.metadata?.timestamp || new Date().toISOString(),
           searchMode: result.metadata?.searchMode || filters.searchMode,
           embeddingGenerated: embeddingGenerated,
-          debug: result.metadata?.debug
-        }
+          debug: result.metadata?.debug,
+        },
       }))
 
       console.log("✅ Search completed successfully")
@@ -512,13 +541,13 @@ export default function QuantumPDFChatbot() {
       console.log("=== Document Search Completed ===")
 
       setSearchResults(transformedResults)
-      
+
       // Show success message with details
       if (transformedResults.length > 0) {
         addError({
           type: "success",
           title: "Search Completed",
-          message: `Found ${transformedResults.length} result${transformedResults.length > 1 ? 's' : ''} using ${filters.searchMode} search`,
+          message: `Found ${transformedResults.length} result${transformedResults.length > 1 ? "s" : ""} using ${filters.searchMode} search`,
         })
       } else {
         addError({
@@ -527,19 +556,18 @@ export default function QuantumPDFChatbot() {
           message: `No results found for "${query}" using ${filters.searchMode} search. Try adjusting your search terms or lowering the relevance threshold.`,
         })
       }
-      
+
       return transformedResults
-      
     } catch (error) {
       console.error("❌ Search failed:", error)
-      
+
       // Enhanced error handling with specific messages
       let errorMessage = "Unknown error occurred"
       let errorTitle = "Search Failed"
-      
+
       if (error instanceof Error) {
         errorMessage = error.message
-        
+
         // Categorize error types
         if (error.message.includes("embedding")) {
           errorTitle = "AI Configuration Error"
@@ -549,13 +577,13 @@ export default function QuantumPDFChatbot() {
           errorTitle = "Database Connection Error"
         }
       }
-      
+
       addError({
         type: "error",
         title: errorTitle,
         message: errorMessage,
       })
-      
+
       setSearchResults([])
       return []
     } finally {
@@ -566,7 +594,7 @@ export default function QuantumPDFChatbot() {
   const handleTestAI = async (config: any): Promise<boolean> => {
     try {
       setModelStatus("loading")
-      await ragEngine.updateConfig(config)
+      await hybridRAGEngine.updateConfig(config)
       setModelStatus("ready")
       return true
     } catch (error) {
@@ -613,12 +641,12 @@ export default function QuantumPDFChatbot() {
 
   const handleTabChange = async (newTab: string) => {
     if (newTab === activeTab) return
-    
+
     setIsTabLoading(true)
-    
+
     // Simulate tab content loading
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
     setActiveTab(newTab)
     setIsTabLoading(false)
   }
@@ -716,47 +744,47 @@ export default function QuantumPDFChatbot() {
                         <ChatInterfaceSkeleton />
                       </div>
                     ) : (
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h2 className="font-bold text-lg">Chat Controls</h2>
-                        <QuickActions
-                          onClearChat={handleClearChat}
-                          onNewSession={handleNewSession}
-                          disabled={!isChatReady}
-                        />
-                      </div>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h2 className="font-bold text-lg">Chat Controls</h2>
+                          <QuickActions
+                            onClearChat={handleClearChat}
+                            onNewSession={handleNewSession}
+                            disabled={!isChatReady}
+                          />
+                        </div>
 
-                      <Card className="border-2 border-black shadow-none">
-                        <CardHeader className="border-b border-black">
-                          <CardTitle className="text-sm flex items-center space-x-2">
-                            <Brain className="w-4 h-4" />
-                            <span>CHAT STATUS</span>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4 space-y-3">
-                          <div className="flex items-center justify-between text-sm">
-                            <span>AI Model:</span>
-                            <Badge variant={modelStatus === "ready" ? "default" : "secondary"}>
-                              {modelStatus.toUpperCase()}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span>Documents:</span>
-                            <span className="font-bold">{documents.length}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span>Messages:</span>
-                            <span className="font-bold">{messages.length}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span>Vector DB:</span>
-                            <Badge variant="outline" className="text-xs">
-                              {vectorDBConfig.provider.toUpperCase()}
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
+                        <Card className="border-2 border-black shadow-none">
+                          <CardHeader className="border-b border-black">
+                            <CardTitle className="text-sm flex items-center space-x-2">
+                              <Brain className="w-4 h-4" />
+                              <span>CHAT STATUS</span>
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-4 space-y-3">
+                            <div className="flex items-center justify-between text-sm">
+                              <span>AI Model:</span>
+                              <Badge variant={modelStatus === "ready" ? "default" : "secondary"}>
+                                {modelStatus.toUpperCase()}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span>Documents:</span>
+                              <span className="font-bold">{documents.length}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span>Messages:</span>
+                              <span className="font-bold">{messages.length}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span>Vector DB:</span>
+                              <Badge variant="outline" className="text-xs">
+                                {vectorDBConfig.provider.toUpperCase()}
+                              </Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
                     )}
                   </TabsContent>
 
@@ -764,12 +792,12 @@ export default function QuantumPDFChatbot() {
                     {isTabLoading ? (
                       <TabContentLoadingSkeleton />
                     ) : (
-                    <div className="space-y-4">
-                      <h2 className="font-bold text-lg">Document Management</h2>
-                      <UnifiedPDFProcessor onDocumentProcessed={handleDocumentUpload} />
-                      <Separator className="bg-black" />
-                      <DocumentLibrary documents={documents} onRemoveDocument={handleRemoveDocument} />
-                    </div>
+                      <div className="space-y-4">
+                        <h2 className="font-bold text-lg">Document Management</h2>
+                        <UnifiedPDFProcessor onDocumentProcessed={handleDocumentUpload} />
+                        <Separator className="bg-black" />
+                        <DocumentLibrary documents={documents} onRemoveDocument={handleRemoveDocument} />
+                      </div>
                     )}
                   </TabsContent>
 
@@ -777,10 +805,10 @@ export default function QuantumPDFChatbot() {
                     {isTabLoading ? (
                       <TabContentLoadingSkeleton />
                     ) : (
-                    <div className="space-y-4">
-                      <h2 className="font-bold text-lg">Document Search</h2>
-                      <EnhancedSearch onSearch={handleSearch} documents={documents} />
-                    </div>
+                      <div className="space-y-4">
+                        <h2 className="font-bold text-lg">Document Search</h2>
+                        <EnhancedSearch onSearch={handleSearch} documents={documents} />
+                      </div>
                     )}
                   </TabsContent>
 
@@ -788,10 +816,7 @@ export default function QuantumPDFChatbot() {
                     {isTabLoading ? (
                       <TabContentLoadingSkeleton />
                     ) : (
-                    <UnifiedConfiguration
-                      onTestAI={handleTestAI}
-                      onTestVectorDB={handleTestVectorDB}
-                    />
+                      <UnifiedConfiguration onTestAI={handleTestAI} onTestVectorDB={handleTestVectorDB} />
                     )}
                   </TabsContent>
 
@@ -799,16 +824,16 @@ export default function QuantumPDFChatbot() {
                     {isTabLoading ? (
                       <TabContentLoadingSkeleton />
                     ) : (
-                    <div className="space-y-4">
-                      <h2 className="font-bold text-lg">System Monitor</h2>
-                      <SystemStatus
-                        modelStatus={modelStatus}
-                        apiConfig={aiConfig}
-                        documents={documents}
-                        messages={messages}
-                        ragEngine={ragEngine ? ragEngine.getStatus() : {}}
-                      />
-                    </div>
+                      <div className="space-y-4">
+                        <h2 className="font-bold text-lg">System Monitor</h2>
+                        <SystemStatus
+                          modelStatus={modelStatus}
+                          apiConfig={aiConfig}
+                          documents={documents}
+                          messages={messages}
+                          ragEngine={hybridRAGEngine ? hybridRAGEngine.getSystemStatus() : {}}
+                        />
+                      </div>
                     )}
                   </TabsContent>
                 </div>
@@ -914,7 +939,7 @@ export default function QuantumPDFChatbot() {
               onNewSession={handleNewSession}
               isProcessing={isProcessing}
               disabled={!isChatReady}
-              ragEngine={ragEngine}
+              ragEngine={hybridRAGEngine}
             />
           </div>
         </main>

@@ -10,4 +10,4 @@ services:
       - ./neo4j/data:/data
     ports:
       - "7474:7474" # HTTP Browser/UI
-      - "7687:7687" # Bolt protocol for drivers 
+      - "7687:7687" # Bolt protocol for drivers

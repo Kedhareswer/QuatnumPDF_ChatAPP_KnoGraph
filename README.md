@@ -53,7 +53,7 @@ QuantumPDF ChatApp enables intelligent conversations with PDF documents. Built w
 
 ### Core Processing Flow
 
-```mermaid
+\`\`\`mermaid
 graph LR
     A[PDF Upload] --> B[Text Extraction]
     B --> C[Adaptive Chunking]
@@ -67,11 +67,11 @@ graph LR
     J --> K[AI Response Generation]
     K --> L[Quality Validation]
     L --> M[Final Answer]
-```
+\`\`\`
 
 ### PDF Chunking & Vector Processing
 
-```mermaid
+\`\`\`mermaid
 graph TD
     A[PDF Document] --> B[Text Extraction]
     B --> C[Adaptive Chunking]
@@ -98,11 +98,11 @@ graph TD
     P --> Q[Similarity Search]
     Q --> R[Retrieved Chunks]
     R --> S[AI Response Generation]
-```
+\`\`\`
 
 ### Document Storage & Retrieval
 
-```mermaid
+\`\`\`mermaid
 graph LR
     subgraph "Document Processing"
         A[PDF Page 1] --> A1["Chunk 1<br/>Size: 800 tokens<br/>Overlap: 80 tokens"]
@@ -131,11 +131,11 @@ graph LR
         SR --> RC[Retrieved Chunks]
         RC --> AI[AI Response]
     end
-```
+\`\`\`
 
 ### Chunk Placement & Vector Space
 
-```mermaid
+\`\`\`mermaid
 graph TD
     subgraph "Chunk Placement Strategy"
         A[Original Text] --> B[Sentence Boundary Detection]
@@ -165,7 +165,7 @@ graph TD
     
     F --> G
     O --> P[Final Response]
-```
+\`\`\`
 
 ### Technical Components
 
@@ -207,7 +207,7 @@ The system uses intelligent chunking that adapts to document characteristics:
 
 Each chunk is stored with rich metadata:
 
-```json
+\`\`\`json
 {
   "id": "doc1_chunk1",
   "vector": [0.1, 0.3, -0.2, ...], // 1536 dimensions
@@ -223,7 +223,7 @@ Each chunk is stored with rich metadata:
   },
   "content": "Original text content..."
 }
-```
+\`\`\`
 
 ### **Similarity Search Process**
 
@@ -279,7 +279,7 @@ Retrieved chunks are assembled with consideration for:
 
 ### Entity Relationship
 
-```mermaid
+\`\`\`mermaid
 erDiagram
     User {
         string id
@@ -321,11 +321,11 @@ erDiagram
     User ||--o{ Chat : participates
     Chat ||--o{ Message : contains
     Message }o--|| Chunk : references
-```
+\`\`\`
 
 ### User Interaction Flow
 
-```mermaid
+\`\`\`mermaid
 sequenceDiagram
     actor User
     participant UI as Web Interface
@@ -354,11 +354,11 @@ sequenceDiagram
     AI-->>API: Final Answer
     API-->>UI: Display Response
     UI-->>User: Show Answer
-```
+\`\`\`
 
 ### System Components
 
-```
+\`\`\`
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │   Frontend      │     │   API Routes    │     │   AI Services   │
 │                 │     │                 │     │                 │
@@ -378,7 +378,7 @@ sequenceDiagram
                     │ • Weaviate              │
                     │ • Local Storage         │
                     └─────────────────────────┘
-```
+\`\`\`
 
 ### Data Flow
 
@@ -424,7 +424,7 @@ sequenceDiagram
 
 ### Installation
 
-```bash
+\`\`\`bash
 # Clone repository
 git clone https://github.com/Kedhareswer/QuantumPDF_ChatApp.git
 cd QuantumPDF_ChatApp
@@ -438,7 +438,7 @@ cp .env.example .env.local
 
 # Start development server
 pnpm dev
-```
+\`\`\`
 
 ### First Steps
 
@@ -465,32 +465,32 @@ pnpm dev
 ## 📝 Example Prompts
 
 ### Information Extraction
-```
+\`\`\`
 "What are the key findings in this research paper?"
 "List all the requirements mentioned in section 3"
 "Extract the financial data from the annual report"
-```
+\`\`\`
 
 ### Analysis & Comparison
-```
+\`\`\`
 "Compare the approaches described in chapters 2 and 5"
 "What are the pros and cons of the proposed solution?"
 "How does this contract differ from the standard template?"
-```
+\`\`\`
 
 ### Specific Searches
-```
+\`\`\`
 "Find all mentions of 'machine learning' with their context"
 "What does the document say about data privacy?"
 "Show me the conclusion section"
-```
+\`\`\`
 
 ### Complex Queries
-```
+\`\`\`
 "Summarize the methodology and results, focusing on statistical significance"
 "What are the legal implications of clause 7.3 combined with section 12?"
 "Based on the financial statements, calculate the year-over-year growth"
-```
+\`\`\`
 
 ---
 

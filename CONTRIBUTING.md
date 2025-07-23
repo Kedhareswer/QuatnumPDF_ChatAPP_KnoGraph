@@ -78,7 +78,7 @@ We are committed to providing a welcoming and inclusive environment for all cont
 
 ### Initial Setup
 
-```bash
+\`\`\`bash
 # 1. Fork the repository on GitHub
 # Click "Fork" button on https://github.com/Kedhareswer/QuantumPDF_ChatApp
 
@@ -101,11 +101,11 @@ pnpm dev
 
 # 7. Verify setup
 # Open http://localhost:3000 and test basic functionality
-```
+\`\`\`
 
 ### Development Environment
 
-```bash
+\`\`\`bash
 # Useful development commands
 pnpm dev          # Start development server
 pnpm build        # Build for production
@@ -113,7 +113,7 @@ pnpm start        # Start production server
 pnpm lint         # Run ESLint
 pnpm type-check   # TypeScript checking
 pnpm test         # Run tests (when available)
-```
+\`\`\`
 
 ---
 
@@ -128,7 +128,7 @@ pnpm test         # Run tests (when available)
 4. **Include system information**
 
 **Good Bug Report:**
-```markdown
+\`\`\`markdown
 ## Bug Description
 Clear and concise description of the bug.
 
@@ -152,7 +152,7 @@ What actually happened.
 
 ## Additional Context
 Screenshots, error logs, etc.
-```
+\`\`\`
 
 ### ✨ Feature Requests
 
@@ -163,7 +163,7 @@ Screenshots, error logs, etc.
 4. **Create implementation plan**
 
 **Feature Request Template:**
-```markdown
+\`\`\`markdown
 ## Feature Description
 Clear description of the proposed feature.
 
@@ -181,7 +181,7 @@ Technical approach (if you have ideas).
 
 ## Additional Context
 Mockups, examples, related issues, etc.
-```
+\`\`\`
 
 ### 📚 Documentation
 
@@ -222,7 +222,7 @@ Mockups, examples, related issues, etc.
 
 ### Git Workflow
 
-```bash
+\`\`\`bash
 # 1. Sync with upstream
 git checkout main
 git pull upstream main
@@ -244,19 +244,19 @@ git push origin feature/your-feature-name
 
 # 5. Create Pull Request
 # Use GitHub interface to create PR
-```
+\`\`\`
 
 ### Commit Message Convention
 
 We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
 
-```bash
+\`\`\`bash
 <type>[optional scope]: <description>
 
 [optional body]
 
 [optional footer(s)]
-```
+\`\`\`
 
 **Types:**
 - `feat:` New feature
@@ -268,7 +268,7 @@ We follow the [Conventional Commits](https://www.conventionalcommits.org/) speci
 - `chore:` Maintenance tasks
 
 **Examples:**
-```bash
+\`\`\`bash
 feat: add support for Groq AI provider
 fix: resolve mobile responsive layout issue
 docs: update API documentation for vector database
@@ -276,7 +276,7 @@ style: format code with prettier
 refactor: optimize PDF processing performance
 test: add unit tests for chat interface
 chore: update dependencies to latest versions
-```
+\`\`\`
 
 ---
 
@@ -284,7 +284,7 @@ chore: update dependencies to latest versions
 
 ### TypeScript Guidelines
 
-```typescript
+\`\`\`typescript
 // ✅ Good
 interface DocumentMetadata {
   id: string;
@@ -301,11 +301,11 @@ function processDocument(doc: DocumentMetadata): Promise<ProcessedDocument> {
 function processDocument(doc: any): any {
   // Implementation
 }
-```
+\`\`\`
 
 ### React Component Standards
 
-```tsx
+\`\`\`tsx
 // ✅ Good
 interface ChatMessageProps {
   message: Message;
@@ -325,7 +325,7 @@ export function ChatMessage({
 export function ChatMessage(props: any) {
   // Implementation
 }
-```
+\`\`\`
 
 ### Code Quality Checklist
 
@@ -353,7 +353,7 @@ export function ChatMessage(props: any) {
 
 ### Writing Tests
 
-```typescript
+\`\`\`typescript
 // Unit test example
 import { render, screen } from '@testing-library/react';
 import { ChatMessage } from './ChatMessage';
@@ -372,7 +372,7 @@ describe('ChatMessage', () => {
     expect(screen.getByText('Test message')).toBeInTheDocument();
   });
 });
-```
+\`\`\`
 
 ### Manual Testing Checklist
 
@@ -389,7 +389,7 @@ describe('ChatMessage', () => {
 
 ### Code Documentation
 
-```typescript
+\`\`\`typescript
 /**
  * Processes a PDF document and extracts text content
  * @param file - The PDF file to process
@@ -403,7 +403,7 @@ async function processPDF(
 ): Promise<DocumentData> {
   // Implementation
 }
-```
+\`\`\`
 
 ### README Updates
 
@@ -428,7 +428,7 @@ When updating documentation:
 - [ ] Related issues linked
 
 **PR Description Template:**
-```markdown
+\`\`\`markdown
 ## Description
 Brief description of changes made.
 
@@ -451,7 +451,7 @@ Include screenshots for UI changes.
 - [ ] Self-review completed
 - [ ] Documentation updated
 - [ ] Tests added/updated
-```
+\`\`\`
 
 ### Review Criteria
 
@@ -538,4 +538,4 @@ Regular contributors may be invited to become maintainers with:
 
 Together, we're building the future of AI-powered document analysis.
 
-</div> 
+</div>
